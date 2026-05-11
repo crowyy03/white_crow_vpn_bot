@@ -1,0 +1,13 @@
+whitecrow.online {
+    handle /webhook/* {
+        reverse_proxy bot:8000
+    }
+
+    handle /healthz {
+        reverse_proxy bot:8000
+    }
+
+    handle {
+        respond "White Crow VPN" 200
+    }
+}
