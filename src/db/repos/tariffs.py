@@ -16,3 +16,7 @@ class TariffsRepo:
 
     async def get(self, tariff_id: int) -> Tariff | None:
         return await self.session.get(Tariff, tariff_id)
+
+    async def get_by_code(self, code: str) -> Tariff | None:
+        result = await self.session.execute(select(Tariff).where(Tariff.code == code))
+        return result.scalar_one_or_none()

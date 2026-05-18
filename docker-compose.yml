@@ -14,6 +14,18 @@ services:
     command: >
       sh -c "alembic upgrade head && python -m src.main"
 
+  scheduler:
+    build: .
+    container_name: vpn-bot-scheduler
+    restart: unless-stopped
+    env_file: [.env]
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: python -m src.workers.scheduler
+
   db:
     image: postgres:17
     container_name: vpn-bot-db

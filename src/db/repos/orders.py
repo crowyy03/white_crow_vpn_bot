@@ -12,17 +12,17 @@ class OrdersRepo:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
-    async def create(
+    async def create_topup(
         self,
         *,
         user_id: int,
-        tariff_id: int,
         amount_kopecks: int,
         payment_method: str,
     ) -> Order:
         order = Order(
             user_id=user_id,
-            tariff_id=tariff_id,
+            tariff_id=None,
+            kind="topup",
             amount_kopecks=amount_kopecks,
             payment_method=payment_method,
             status="pending",

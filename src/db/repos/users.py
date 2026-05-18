@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -66,6 +66,11 @@ class UsersRepo:
             update(User).where(User.id == user_id).values(**values)
         )
 
+    async def clear_trial_expiration(self, user_id: int) -> None:
+        await self.session.execute(
+            update(User).where(User.id == user_id).values(subscription_until=None)
+        )
+
     async def mark_trial_used(self, user_id: int) -> None:
         await self.session.execute(
             update(User).where(User.id == user_id).values(trial_used=True)
@@ -76,4 +81,26 @@ class UsersRepo:
             update(User)
             .where(User.id == user_id)
             .values(balance_kopecks=User.balance_kopecks + delta_kopecks)
+        )
+
+    async def deduct_balance(self, user_id: int, delta_kopecks: int) -> None:
+        await self.session.execute(
+            update(User)
+            .where(User.id == user_id)
+            .values(balance_kopecks=User.balance_kopecks - delta_kopecks)
+        )
+
+    async def set_active(self, user_id: int, active: bool) -> None:
+        await self.session.execute(
+            update(User).where(User.id == user_id).values(is_active=active)
+        )
+
+    async def set_plan(self, user_id: int, plan: str) -> None:
+        await self.session.execute(
+            update(User).where(User.id == user_id).values(plan=plan)
+        )
+
+    async def set_last_billed_on(self, user_id: int, billed_on: date) -> None:
+        await self.session.execute(
+            update(User).where(User.id == user_id).values(last_billed_on=billed_on)
         )

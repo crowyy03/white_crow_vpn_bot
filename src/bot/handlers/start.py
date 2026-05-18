@@ -1,9 +1,9 @@
 from aiogram import Router
-from aiogram.filters import CommandStart, CommandObject
+from aiogram.filters import CommandObject, CommandStart
 from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.bot.keyboards import main_menu
+from src.bot.keyboards import main_menu, welcome_keyboard
 from src.bot.texts import WELCOME, WELCOME_RETURN
 from src.db.repos import UsersRepo
 
@@ -45,5 +45,14 @@ async def handle_start(
     )
 
     name = message.from_user.first_name or message.from_user.username or "друг"
-    text = WELCOME.format(name=name) if created else WELCOME_RETURN.format(name=name)
-    await message.answer(text, reply_markup=main_menu(), parse_mode="HTML")
+    if created:
+        await message.answer(WELCOME, reply_markup=main_menu(), parse_mode="HTML")
+        await message.answer(
+            "Начнём?", reply_markup=welcome_keyboard()
+        )
+    else:
+        await message.answer(
+            WELCOME_RETURN.format(name=name),
+            reply_markup=main_menu(),
+            parse_mode="HTML",
+        )

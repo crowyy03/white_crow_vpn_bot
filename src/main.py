@@ -12,7 +12,6 @@ from src.bot.middlewares import DbSessionMiddleware
 from src.config import get_settings
 from src.db.session import dispose_engine, get_sessionmaker
 from src.webhooks.api import create_app
-from src.workers import expire_checker, notifications
 
 
 def _setup_logging(level: str) -> None:
@@ -51,8 +50,6 @@ async def main() -> None:
     tasks = [
         asyncio.create_task(_run_polling(dp, bot), name="polling"),
         asyncio.create_task(_run_webhook_server(bot), name="webhooks"),
-        asyncio.create_task(expire_checker.run(sessionmaker, bot), name="expire_checker"),
-        asyncio.create_task(notifications.run(sessionmaker, bot), name="notifier"),
     ]
 
     try:

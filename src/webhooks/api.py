@@ -5,6 +5,7 @@ from fastapi import FastAPI
 
 from src.db.session import get_sessionmaker
 from src.webhooks.cryptomus import router as cryptomus_router
+from src.webhooks.lava import router as lava_router
 from src.webhooks.paypalych import router as paypalych_router
 from src.webhooks.yookassa import router as yookassa_router
 
@@ -20,6 +21,7 @@ def create_app(bot: Bot) -> FastAPI:
     app.include_router(cryptomus_router)
     app.include_router(yookassa_router)
     app.include_router(paypalych_router)
+    app.include_router(lava_router)
 
     @app.get("/healthz")
     async def healthz() -> dict[str, str]:

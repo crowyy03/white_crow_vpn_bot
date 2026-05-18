@@ -1,9 +1,10 @@
-from datetime import datetime
+from datetime import date, datetime
 from uuid import UUID
 
 from sqlalchemy import (
     BigInteger,
     Boolean,
+    Date,
     DateTime,
     ForeignKey,
     Integer,
@@ -37,6 +38,10 @@ class User(Base):
 
     trial_used: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
 
+    plan: Mapped[str] = mapped_column(String(16), default="solo", server_default="solo", nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true", nullable=False)
+    last_billed_on: Mapped[date | None] = mapped_column(Date)
+
     referrer_id: Mapped[int | None] = mapped_column(BigInteger, ForeignKey("users.id"))
     balance_kopecks: Mapped[int] = mapped_column(BigInteger, default=0, server_default="0")
 
@@ -55,11 +60,10 @@ class Tariff(Base):
     __tablename__ = "tariffs"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    code: Mapped[str] = mapped_column(String(16), unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(64), nullable=False)
-    duration_days: Mapped[int] = mapped_column(Integer, nullable=False)
-    price_kopecks: Mapped[int] = mapped_column(BigInteger, nullable=False)
-    price_stars: Mapped[int | None] = mapped_column(Integer)
-    traffic_limit_bytes: Mapped[int | None] = mapped_column(BigInteger)
+    daily_rate_kopecks: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    device_limit: Mapped[int] = mapped_column(Integer, default=1, server_default="1", nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")
     sort_order: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
 
@@ -69,7 +73,11 @@ class Order(Base):
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"), index=True)
-    tariff_id: Mapped[int] = mapped_column(Integer, ForeignKey("tariffs.id"))
+    tariff_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("tariffs.id"))
+
+    kind: Mapped[str] = mapped_column(
+        String(16), default="topup", server_default="topup", nullable=False
+    )
 
     amount_kopecks: Mapped[int] = mapped_column(BigInteger, nullable=False)
     promo_code: Mapped[str | None] = mapped_column(String(32))
@@ -90,7 +98,7 @@ class Order(Base):
     expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     user: Mapped["User"] = relationship(back_populates="orders")
-    tariff: Mapped["Tariff"] = relationship()
+    tariff: Mapped["Tariff | None"] = relationship()
 
 
 class Promocode(Base):

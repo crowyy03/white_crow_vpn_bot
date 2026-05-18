@@ -1,10 +1,9 @@
 from fastapi import APIRouter, HTTPException, Request
 from loguru import logger
 
-from src.db.repos import OrdersRepo, UsersRepo
-from src.services.notifications import send_subscription_link
+from src.services.notifications import send_topup_success
 from src.services.payments.paypalych import verify_postback_signature
-from src.services.subscription import process_payment
+from src.services.subscription import process_topup
 
 router = APIRouter()
 
@@ -41,17 +40,11 @@ async def paypalych_success(request: Request) -> dict:
     bot = request.app.state.bot
 
     async with sessionmaker() as session:
-        result = await process_payment(session, order_id)
+        result = await process_topup(session, order_id)
         await session.commit()
 
     if result is not None:
-        telegram_id, new_expire = result
-        async with sessionmaker() as session:
-            user = await UsersRepo(session).get_by_telegram_id(telegram_id)
-        if user and user.subscription_url:
-            await send_subscription_link(
-                bot, telegram_id, user.subscription_url, new_expire.strftime("%d.%m.%Y")
-            )
+        await send_topup_success(bot, result)
 
     logger.info("paypalych success processed order_id={}", order_id)
     return {"status": "ok"}

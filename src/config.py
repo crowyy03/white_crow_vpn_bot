@@ -34,8 +34,20 @@ class Settings(BaseSettings):
     paypalych_api_url: str = "https://pally.info/api/v1"
     paypalych_api_token: str = ""
     paypalych_shop_id: str = ""
+    lava_api_url: str = "https://api.lava.ru"
+    lava_api_key: str = ""
+    lava_shop_id: str = ""
+    lava_secret: str = ""
 
     payments_fake_enabled: bool = True
+
+    stars_kopecks_per_star: int = 200
+
+    topup_min_kopecks: int = 10000
+    topup_max_kopecks: int = 5000000
+
+    billing_far_future_years: int = 10
+    low_balance_days_threshold: int = 3
 
     trial_days: int = 3
     trial_traffic_gb: int = 10
@@ -65,6 +77,8 @@ class Settings(BaseSettings):
         if self.payments_fake_enabled:
             methods.append("fake")
         methods.append("stars")
+        if self.lava_api_key and self.lava_shop_id:
+            methods.append("lava")
         if self.paypalych_api_token and self.paypalych_shop_id:
             methods.append("paypalych")
         if self.yookassa_shop_id and self.yookassa_secret_key:
